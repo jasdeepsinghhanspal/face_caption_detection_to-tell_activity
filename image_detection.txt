@@ -1,0 +1,40 @@
+# 1. Install required packages (Uncomment if you haven't installed them yet)
+# !pip install transformers torch matplotlib
+
+from transformers import VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
+import torch
+from PIL import Image
+import matplotlib.pyplot as plt
+
+# 2. Load the pre-trained image captioning model
+model = VisionEncoderDecoderModel.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+processor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+
+# 3. Load and process the image
+def load_image(image_path):
+    """Load and preprocess the image."""
+    image = Image.open(image_path)
+    pixel_values = processor(images=image, return_tensors="pt").pixel_values
+    return image, pixel_values
+
+# 4. Generate Caption
+def generate_caption(image_path):
+    """Generate a caption for the given image."""
+    image, pixel_values = load_image(image_path)
+    generated_ids = model.generate(pixel_values)
+    caption = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+    return image, caption
+
+# 5. Display the image and caption
+def show_image_with_caption(image_path):
+    """Display the image with its generated caption."""
+    image, caption = generate_caption(image_path)
+    plt.imshow(image)
+    plt.axis('off')
+    plt.title(caption)
+    plt.show()
+
+# Example usage
+image_path = "jsh.jpeg"  
+show_image_with_caption(image_path)
